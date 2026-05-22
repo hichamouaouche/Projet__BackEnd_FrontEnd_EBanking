@@ -1,0 +1,99 @@
+/* ═══ CSS Variables ═══ */
+:root {
+  color-scheme: light;
+  --bg:      #edf3ff;
+  --bg-2:    #f4f8ff;
+  --surface: rgba(255, 255, 255, 0.92);
+  --text:    #0f172a;
+  --muted:   #64748b;
+  --border:  rgba(100, 116, 139, 0.18);
+  --shadow:  0 8px 24px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 20px 48px rgba(15, 23, 42, 0.12);
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg:      #060c18;
+  --bg-2:    #0a1628;
+  --surface: rgba(14, 22, 40, 0.9);
+  --text:    #e2e8f0;
+  --muted:   #94a3b8;
+  --border:  rgba(148, 163, 184, 0.15);
+  --shadow:  0 8px 24px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 20px 48px rgba(0, 0, 0, 0.5);
+}
+
+/* ═══ Reset & Base ═══ */
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html, body { min-height: 100%; margin: 0; }
+
+body {
+  font-family: 'Manrope', 'Inter', 'Segoe UI', sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text);
+  background:
+    radial-gradient(ellipse at 0% 0%,   rgba(14, 165, 233, 0.08), transparent 40%),
+    radial-gradient(ellipse at 100% 0%,  rgba(16, 185, 129, 0.07), transparent 35%),
+    radial-gradient(ellipse at 50% 100%, rgba(99, 102, 241, 0.06), transparent 40%),
+    linear-gradient(180deg, var(--bg-2) 0%, var(--bg) 100%);
+  background-attachment: fixed;
+}
+
+a { text-decoration: none; color: inherit; }
+
+/* ═══ Material Overrides ═══ */
+mat-card {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: var(--shadow) !important;
+  transition: box-shadow 0.2s !important;
+}
+
+mat-card:hover {
+  box-shadow: var(--shadow-lg) !important;
+}
+
+/* Sidenav */
+.mat-drawer { box-shadow: none !important; }
+.mat-drawer-container { background: transparent !important; }
+
+/* ═══ Snackbar Toasts ═══ */
+.toast-success .mat-mdc-snackbar-surface { background: #14532d !important; }
+.toast-error   .mat-mdc-snackbar-surface { background: #7f1d1d !important; }
+.toast-info    .mat-mdc-snackbar-surface { background: #1e3a8a !important; }
+
+/* ═══ Scrollbar (Webkit) ═══ */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+/* ═══ Utility classes ═══ */
+.page-header { padding: 0.5rem 0 0.25rem; }
+
+.eyebrow {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #0ea5e9;
+  margin: 0 0 0.4rem;
+}
+
+.page-title {
+  font-size: 1.9rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin: 0 0 0.3rem;
+  color: var(--text);
+}
+
+.page-subtitle {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
