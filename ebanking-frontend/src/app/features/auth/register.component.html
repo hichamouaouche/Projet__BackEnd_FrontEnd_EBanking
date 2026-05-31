@@ -1,0 +1,148 @@
+<div class="auth-layout">
+
+  <!-- Left Branding Panel -->
+  <div class="auth-brand">
+    <div class="brand-logo">
+      <mat-icon>account_balance</mat-icon>
+      <span>eBanking Enterprise</span>
+    </div>
+    <div class="brand-content">
+      <h1>Rejoignez des milliers de clients satisfaits</h1>
+      <p>Creez votre compte en quelques secondes et profitez de tous nos services bancaires en ligne.</p>
+      <ul class="feature-list">
+        <li>
+          <div class="feature-icon"><mat-icon>savings</mat-icon></div>
+          <div>
+            <strong>Comptes courants et epargne</strong>
+            <span>Gestion complete de vos finances</span>
+          </div>
+        </li>
+        <li>
+          <div class="feature-icon"><mat-icon>swap_horiz</mat-icon></div>
+          <div>
+            <strong>Virements instantanes</strong>
+            <span>Transferts en temps reel</span>
+          </div>
+        </li>
+        <li>
+          <div class="feature-icon"><mat-icon>bar_chart</mat-icon></div>
+          <div>
+            <strong>Analyse financiere</strong>
+            <span>Suivez vos depenses et revenus</span>
+          </div>
+        </li>
+      </ul>
+    </div>
+    <div class="brand-footer">
+      <span>© 2025 eBanking Enterprise — Confidentiel</span>
+    </div>
+  </div>
+
+  <!-- Right Form Panel -->
+  <div class="auth-form-panel">
+    <mat-card class="auth-card">
+      <div class="auth-card-header">
+        <div class="auth-icon">
+          <mat-icon>person_add</mat-icon>
+        </div>
+        <h2>Creer un compte</h2>
+        <p>Remplissez le formulaire pour rejoindre eBanking</p>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="submit()" class="auth-form">
+
+        <div class="name-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Prenom</mat-label>
+            <input matInput formControlName="firstName" placeholder="Jean" autocomplete="given-name" />
+            @if (form.get('firstName')?.touched && form.get('firstName')?.hasError('required')) {
+              <mat-error>Requis.</mat-error>
+            } @else if (form.get('firstName')?.touched && form.get('firstName')?.hasError('minlength')) {
+              <mat-error>Min. 2 caracteres.</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Nom</mat-label>
+            <input matInput formControlName="lastName" placeholder="Dupont" autocomplete="family-name" />
+            @if (form.get('lastName')?.touched && form.get('lastName')?.hasError('required')) {
+              <mat-error>Requis.</mat-error>
+            }
+          </mat-form-field>
+        </div>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Adresse email</mat-label>
+          <input matInput formControlName="email" placeholder="vous@exemple.com" autocomplete="email" />
+          <mat-icon matSuffix>mail_outline</mat-icon>
+          @if (form.get('email')?.touched && form.get('email')?.hasError('required')) {
+            <mat-error>L'email est requis.</mat-error>
+          } @else if (form.get('email')?.touched && form.get('email')?.hasError('email')) {
+            <mat-error>Format d'email invalide.</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Mot de passe</mat-label>
+          <input matInput formControlName="password"
+            [type]="showPassword() ? 'text' : 'password'"
+            autocomplete="new-password" />
+          <button mat-icon-button matSuffix type="button" (click)="showPassword.update(v => !v)">
+            <mat-icon>{{ showPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          @if (form.get('password')?.touched && form.get('password')?.hasError('required')) {
+            <mat-error>Requis.</mat-error>
+          } @else if (form.get('password')?.touched && form.get('password')?.hasError('minlength')) {
+            <mat-error>Minimum 6 caracteres.</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Confirmer le mot de passe</mat-label>
+          <input matInput formControlName="confirmPassword"
+            [type]="showConfirm() ? 'text' : 'password'"
+            autocomplete="new-password" />
+          <button mat-icon-button matSuffix type="button" (click)="showConfirm.update(v => !v)">
+            <mat-icon>{{ showConfirm() ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          @if (form.get('confirmPassword')?.touched && form.hasError('passwordMismatch')) {
+            <mat-error>Les mots de passe ne correspondent pas.</mat-error>
+          }
+        </mat-form-field>
+
+        <div class="terms-row">
+          <mat-checkbox formControlName="acceptTerms" color="primary">
+            J'accepte les <a href="#" class="terms-link">conditions d'utilisation</a> et la
+            <a href="#" class="terms-link">politique de confidentialite</a>
+          </mat-checkbox>
+          @if (form.get('acceptTerms')?.touched && form.get('acceptTerms')?.hasError('required')) {
+            <p class="terms-error">Vous devez accepter les conditions.</p>
+          }
+        </div>
+
+        <button mat-flat-button class="submit-btn" type="submit" [disabled]="loading()">
+          @if (loading()) {
+            <mat-spinner diameter="20"></mat-spinner>
+            <span>Creation...</span>
+          } @else {
+            <ng-container>
+              <mat-icon>how_to_reg</mat-icon>
+              <span>Creer mon compte</span>
+            </ng-container>
+          }
+        </button>
+
+      </form>
+
+      <div class="auth-divider">
+        <span>Deja inscrit ?</span>
+      </div>
+
+      <a routerLink="/auth/login" mat-stroked-button class="login-btn">
+        <mat-icon>login</mat-icon>
+        Se connecter
+      </a>
+    </mat-card>
+  </div>
+
+</div>
