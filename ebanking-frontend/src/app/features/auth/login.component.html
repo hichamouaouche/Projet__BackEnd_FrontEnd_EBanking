@@ -1,0 +1,117 @@
+<div class="auth-layout">
+
+  <!-- Left Branding Panel -->
+  <div class="auth-brand">
+    <div class="brand-logo">
+      <mat-icon>account_balance</mat-icon>
+      <span>eBanking Enterprise</span>
+    </div>
+    <div class="brand-content">
+      <h1>Votre banque, partout, tout le temps</h1>
+      <p>Gerez vos comptes, suivez vos transactions et controllez vos finances en toute securite.</p>
+      <ul class="feature-list">
+        <li>
+          <div class="feature-icon"><mat-icon>security</mat-icon></div>
+          <div>
+            <strong>Securite maximale</strong>
+            <span>Chiffrement SSL 256-bit</span>
+          </div>
+        </li>
+        <li>
+          <div class="feature-icon"><mat-icon>bolt</mat-icon></div>
+          <div>
+            <strong>Temps reel</strong>
+            <span>Mises a jour instantanees</span>
+          </div>
+        </li>
+        <li>
+          <div class="feature-icon"><mat-icon>support_agent</mat-icon></div>
+          <div>
+            <strong>Support 24/7</strong>
+            <span>Assistance a tout moment</span>
+          </div>
+        </li>
+      </ul>
+    </div>
+    <div class="brand-footer">
+      <span>© 2025 eBanking Enterprise — Confidentiel</span>
+    </div>
+  </div>
+
+  <!-- Right Form Panel -->
+  <div class="auth-form-panel">
+    <mat-card class="auth-card">
+      <div class="auth-card-header">
+        <div class="auth-icon">
+          <mat-icon>lock</mat-icon>
+        </div>
+        <h2>Connexion</h2>
+        <p>Entrez vos identifiants pour acceder a votre espace</p>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="submit()" class="auth-form">
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Adresse email</mat-label>
+          <input matInput formControlName="email" placeholder="vous@exemple.com" autocomplete="email" />
+          <mat-icon matSuffix>mail_outline</mat-icon>
+          @if (form.get('email')?.touched && form.get('email')?.hasError('required')) {
+            <mat-error>L'email est requis.</mat-error>
+          } @else if (form.get('email')?.touched && form.get('email')?.hasError('email')) {
+            <mat-error>Format d'email invalide.</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Mot de passe</mat-label>
+          <input
+            matInput
+            formControlName="password"
+            [type]="showPassword() ? 'text' : 'password'"
+            autocomplete="current-password"
+          />
+          <button mat-icon-button matSuffix type="button" (click)="togglePassword()" aria-label="Afficher/masquer">
+            <mat-icon>{{ showPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          @if (form.get('password')?.touched && form.get('password')?.hasError('required')) {
+            <mat-error>Le mot de passe est requis.</mat-error>
+          } @else if (form.get('password')?.touched && form.get('password')?.hasError('minlength')) {
+            <mat-error>Minimum 4 caracteres.</mat-error>
+          }
+        </mat-form-field>
+
+        <div class="form-options">
+          <a routerLink="/auth/forgot-password" class="forgot-link">Mot de passe oublie ?</a>
+        </div>
+
+        <button
+          mat-flat-button
+          class="submit-btn"
+          type="submit"
+          [disabled]="loading()"
+        >
+          @if (loading()) {
+            <mat-spinner diameter="20"></mat-spinner>
+            <span>Connexion...</span>
+          } @else {
+            <ng-container>
+              <mat-icon>login</mat-icon>
+              <span>Se connecter</span>
+            </ng-container>
+          }
+        </button>
+
+      </form>
+
+      <div class="auth-divider">
+        <span>Nouveau sur eBanking ?</span>
+      </div>
+
+      <a routerLink="/auth/register" mat-stroked-button class="register-btn">
+        <mat-icon>person_add</mat-icon>
+        Creer un compte
+      </a>
+    </mat-card>
+  </div>
+
+</div>
