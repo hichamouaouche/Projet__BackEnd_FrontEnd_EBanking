@@ -1,0 +1,120 @@
+<!-- ═══ Top Bar ═══ -->
+<mat-toolbar class="topbar">
+  <div class="topbar-left">
+    @if (authed()) {
+      <button mat-icon-button (click)="toggleSidenav()" matTooltip="Menu" class="menu-btn">
+        <mat-icon>menu</mat-icon>
+      </button>
+    }
+    <a routerLink="/dashboard" class="brand">
+      <mat-icon class="brand-icon">account_balance</mat-icon>
+      <span class="brand-name">eBanking</span>
+      <span class="brand-tag">Enterprise</span>
+    </a>
+  </div>
+
+  <span class="spacer"></span>
+
+  <div class="topbar-right">
+    <button mat-icon-button (click)="theme.toggleTheme()" [matTooltip]="theme.mode() === 'dark' ? 'Mode clair' : 'Mode sombre'">
+      <mat-icon>{{ theme.mode() === 'dark' ? 'light_mode' : 'dark_mode' }}</mat-icon>
+    </button>
+
+    @if (authed()) {
+      <button mat-icon-button matTooltip="Notifications" class="notif-btn">
+        <mat-icon>notifications_none</mat-icon>
+      </button>
+
+      <button mat-button [matMenuTriggerFor]="userMenu" class="user-trigger">
+        <div class="avatar" [attr.data-role]="session()?.role">
+          {{ initials().toUpperCase() || session()?.username?.[0]?.toUpperCase() }}
+        </div>
+        <span class="user-name">{{ displayName() }}</span>
+        <mat-icon class="chevron">expand_more</mat-icon>
+      </button>
+
+      <mat-menu #userMenu="matMenu" class="user-menu">
+        <div class="menu-header" mat-menu-item disabled>
+          <strong>{{ displayName() }}</strong>
+          <small>{{ session()?.username }}</small>
+          <span class="role-chip">{{ session()?.role }}</span>
+        </div>
+        <mat-divider></mat-divider>
+        <a mat-menu-item routerLink="/profile">
+          <mat-icon>person_outline</mat-icon> Mon profil
+        </a>
+        <a mat-menu-item routerLink="/settings">
+          <mat-icon>settings</mat-icon> Parametres
+        </a>
+        <mat-divider></mat-divider>
+        <button mat-menu-item (click)="logout()" routerLink="/auth/login" class="logout-item">
+          <mat-icon>logout</mat-icon> Deconnexion
+        </button>
+      </mat-menu>
+    }
+  </div>
+</mat-toolbar>
+
+<!-- ═══ Loading Bar ═══ -->
+@if (loading.isLoading()) {
+  <mat-progress-bar mode="indeterminate" class="loading-bar"></mat-progress-bar>
+}
+
+<!-- ═══ Layout ═══ -->
+<mat-sidenav-container class="layout">
+
+  <mat-sidenav
+    [mode]="authed() ? 'side' : 'over'"
+    [opened]="authed() && sidenavOpen()"
+    class="sidenav"
+  >
+    @if (authed()) {
+      <!-- User Card -->
+      <div class="sidenav-user">
+        <div class="avatar-lg" [attr.data-role]="session()?.role">
+          {{ initials().toUpperCase() || session()?.username?.[0]?.toUpperCase() }}
+        </div>
+        <div class="user-info">
+          <strong>{{ displayName() }}</strong>
+          <span class="role-badge">{{ session()?.role }}</span>
+        </div>
+      </div>
+
+      <mat-divider></mat-divider>
+
+      <!-- Main Navigation -->
+      <nav mat-nav-list class="nav-list">
+        @for (item of navItems; track item.route) {
+          <a mat-list-item [routerLink]="item.route" routerLinkActive="active-link" class="nav-item">
+            <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+            <span matListItemTitle>{{ item.label }}</span>
+          </a>
+        }
+      </nav>
+
+      <div class="sidenav-spacer"></div>
+      <mat-divider></mat-divider>
+
+      <!-- Bottom Navigation -->
+      <nav mat-nav-list class="nav-list nav-bottom">
+        @for (item of bottomNavItems; track item.route) {
+          <a mat-list-item [routerLink]="item.route" routerLinkActive="active-link" class="nav-item">
+            <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+            <span matListItemTitle>{{ item.label }}</span>
+          </a>
+        }
+        <button mat-list-item (click)="logout()" routerLink="/auth/login" class="nav-item nav-logout">
+          <mat-icon matListItemIcon>logout</mat-icon>
+          <span matListItemTitle>Deconnexion</span>
+        </button>
+      </nav>
+    }
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+    <main class="content">
+      <router-outlet></router-outlet>
+    </main>
+  </mat-sidenav-content>
+
+</mat-sidenav-container>
