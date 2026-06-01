@@ -1,0 +1,24 @@
+<section class="page" *ngIf="account() as account">
+  <mat-card>
+    <h1>{{ account.customerDTO.name }}</h1>
+    <p>{{ account.id }}</p>
+    <h2>{{ account.balance | number: '1.2-2' }} EUR</h2>
+  </mat-card>
+
+  <mat-card *ngIf="history() as history">
+    <h3>Historique operations</h3>
+    <div class="ops" *ngFor="let op of history.accountOperationDTOS">
+      <div>
+        <strong>{{ op.type }}</strong>
+        <p>{{ op.description }}</p>
+      </div>
+      <span>{{ op.amount | number: '1.2-2' }} EUR</span>
+    </div>
+
+    <div class="actions">
+      <button mat-stroked-button (click)="previousPage()">Precedent</button>
+      <span>Page {{ history.currentPage + 1 }} / {{ history.totalPages }}</span>
+      <button mat-stroked-button (click)="nextPage()">Suivant</button>
+    </div>
+  </mat-card>
+</section>

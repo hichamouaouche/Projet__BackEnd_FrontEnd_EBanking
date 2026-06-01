@@ -1,0 +1,20 @@
+.page {
+  display: grid;
+  gap: 1rem;
+}
+.ops {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--border);
+}
+.ops p {
+  margin: 0;
+  color: var(--muted);
+}
+.actions {
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
