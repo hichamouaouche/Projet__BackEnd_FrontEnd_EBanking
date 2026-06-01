@@ -1,0 +1,105 @@
+<section class="page">
+
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">CRM</p>
+      <h1 class="page-title">Gestion clients</h1>
+      <p class="page-subtitle">{{ editingId ? 'Modification du client #' + editingId : 'Creez et gerez vos clients' }}</p>
+    </div>
+  </header>
+
+  <!-- Form Card -->
+  <mat-card class="form-card">
+    <div class="form-card-header">
+      <mat-icon>{{ editingId ? 'edit' : 'person_add' }}</mat-icon>
+      <h3>{{ editingId ? 'Modifier le client' : 'Nouveau client' }}</h3>
+    </div>
+    <form [formGroup]="form" (ngSubmit)="submit()" class="form-grid">
+      <mat-form-field appearance="outline">
+        <mat-label>Nom complet</mat-label>
+        <input matInput formControlName="name" placeholder="Jean Dupont" />
+        <mat-icon matSuffix>person</mat-icon>
+        @if (form.get('name')?.touched && form.get('name')?.invalid) {
+          <mat-error>Minimum 2 caracteres.</mat-error>
+        }
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Adresse email</mat-label>
+        <input matInput formControlName="email" placeholder="jean@exemple.com" />
+        <mat-icon matSuffix>mail_outline</mat-icon>
+        @if (form.get('email')?.touched && form.get('email')?.invalid) {
+          <mat-error>Email invalide.</mat-error>
+        }
+      </mat-form-field>
+      <div class="form-actions">
+        <button mat-flat-button class="save-btn" type="submit">
+          <mat-icon>{{ editingId ? 'save' : 'add' }}</mat-icon>
+          {{ editingId ? 'Mettre a jour' : 'Ajouter' }}
+        </button>
+        @if (editingId) {
+          <button mat-stroked-button type="button" (click)="reset()">
+            <mat-icon>close</mat-icon> Annuler
+          </button>
+        }
+      </div>
+    </form>
+  </mat-card>
+
+  <!-- Customers Table -->
+  <mat-card class="table-card">
+    <div class="table-header">
+      <h3><mat-icon>people</mat-icon> Liste des clients ({{ users().length }})</h3>
+    </div>
+    <div class="table-wrapper">
+      <table mat-table [dataSource]="users()" class="customers-table">
+
+        <ng-container matColumnDef="id">
+          <th mat-header-cell *matHeaderCellDef>#</th>
+          <td mat-cell *matCellDef="let user">
+            <span class="id-badge">{{ user.id }}</span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef>Client</th>
+          <td mat-cell *matCellDef="let user">
+            <div class="client-cell">
+              <div class="client-avatar">{{ user.name[0] }}</div>
+              <div>
+                <strong>{{ user.name }}</strong>
+              </div>
+            </div>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="email">
+          <th mat-header-cell *matHeaderCellDef>Email</th>
+          <td mat-cell *matCellDef="let user">
+            <span class="email-cell">{{ user.email }}</span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>Actions</th>
+          <td mat-cell *matCellDef="let user">
+            <div class="row-actions">
+              <button mat-icon-button (click)="openDetails(user.id)" matTooltip="Voir les comptes" class="action-btn view">
+                <mat-icon>visibility</mat-icon>
+              </button>
+              <button mat-icon-button (click)="edit(user)" matTooltip="Modifier" class="action-btn edit">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button (click)="remove(user.id)" matTooltip="Supprimer" class="action-btn delete">
+                <mat-icon>delete_outline</mat-icon>
+              </button>
+            </div>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns" class="table-row"></tr>
+      </table>
+    </div>
+  </mat-card>
+
+</section>
