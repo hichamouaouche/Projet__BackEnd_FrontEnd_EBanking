@@ -1,0 +1,69 @@
+<section class="page">
+
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Gestion</p>
+      <h1 class="page-title">Comptes bancaires</h1>
+      <p class="page-subtitle">Recherche et consultation des comptes actifs</p>
+    </div>
+  </header>
+
+  <div class="toolbar">
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Rechercher</mat-label>
+      <input matInput [formControl]="search" placeholder="Nom, email ou identifiant..." />
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+    <div class="count-badge">{{ filteredAccounts().length }} compte(s)</div>
+  </div>
+
+  @if (loading()) {
+    <div class="state-block">
+      <mat-spinner diameter="36"></mat-spinner>
+      <p>Chargement des comptes...</p>
+    </div>
+  }
+
+  @if (!loading() && filteredAccounts().length === 0) {
+    <div class="state-block empty">
+      <mat-icon>account_balance_wallet</mat-icon>
+      <p>Aucun compte trouve.</p>
+    </div>
+  }
+
+  <div class="accounts-grid">
+    @for (account of filteredAccounts(); track account.id) {
+      <mat-card class="account-card" (click)="openDetails(account.id)">
+        <div class="card-top">
+          <span class="type-chip" [class.current]="isCurrentAccount(account)" [class.saving]="!isCurrentAccount(account)">
+            <mat-icon>{{ isCurrentAccount(account) ? 'credit_card' : 'savings' }}</mat-icon>
+            {{ accountType(account) }}
+          </span>
+          <span class="status-dot" [class]="account.status?.toLowerCase() || 'activated'"></span>
+        </div>
+
+        <div class="balance">
+          <span class="balance-amount">{{ account.balance | number:'1.2-2' }}</span>
+          <span class="balance-currency">EUR</span>
+        </div>
+
+        <div class="account-owner">
+          <div class="owner-avatar">{{ account.customerDTO.name[0] }}</div>
+          <div>
+            <strong>{{ account.customerDTO.name }}</strong>
+            <p>{{ account.customerDTO.email }}</p>
+          </div>
+        </div>
+
+        <code class="account-id">{{ account.id }}</code>
+
+        <div class="card-footer">
+          <button mat-flat-button class="details-btn" (click)="$event.stopPropagation(); openDetails(account.id)">
+            <mat-icon>open_in_new</mat-icon> Details
+          </button>
+        </div>
+      </mat-card>
+    }
+  </div>
+
+</section>
