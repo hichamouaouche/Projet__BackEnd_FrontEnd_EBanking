@@ -1,0 +1,71 @@
+<section class="page">
+
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Historique</p>
+      <h1 class="page-title">Transactions</h1>
+      <p class="page-subtitle">Consultez l'historique des operations par compte</p>
+    </div>
+  </header>
+
+  <mat-card class="selector-card">
+    <div class="selector-header">
+      <mat-icon>account_balance_wallet</mat-icon>
+      <span>Selectionner un compte</span>
+    </div>
+    <mat-form-field appearance="outline" class="account-select">
+      <mat-label>Compte</mat-label>
+      <mat-select [formControl]="selectedAccountId">
+        @for (account of accounts(); track account.id) {
+          <mat-option [value]="account.id">
+            {{ account.customerDTO.name }} — {{ account.id | slice:0:18 }}…
+          </mat-option>
+        }
+      </mat-select>
+      <mat-icon matSuffix>expand_more</mat-icon>
+    </mat-form-field>
+  </mat-card>
+
+  @if (operations().length === 0) {
+    <div class="state-block">
+      <mat-icon>receipt_long</mat-icon>
+      <p>Aucune operation pour ce compte.</p>
+    </div>
+  } @else {
+    <mat-card class="ops-card">
+      <div class="ops-header">
+        <h3>{{ operations().length }} operation(s)</h3>
+        <div class="ops-legend">
+          <span class="legend credit"><mat-icon>arrow_downward</mat-icon>Credit</span>
+          <span class="legend debit"><mat-icon>arrow_upward</mat-icon>Debit</span>
+        </div>
+      </div>
+
+      <div class="ops-list">
+        @for (op of operations(); track op.id) {
+          <div class="op-row">
+            <div class="op-icon" [class.credit]="op.type === 'CREDIT'" [class.debit]="op.type === 'DEBIT'">
+              <mat-icon>{{ op.type === 'CREDIT' ? 'arrow_downward' : 'arrow_upward' }}</mat-icon>
+            </div>
+            <div class="op-details">
+              <strong>{{ op.description || 'Operation bancaire' }}</strong>
+              <span class="op-date">
+                <mat-icon>calendar_today</mat-icon>
+                {{ op.operationDate | date:'dd/MM/yyyy HH:mm' }}
+              </span>
+            </div>
+            <div class="op-meta">
+              <span class="op-type-label" [class.credit]="op.type === 'CREDIT'" [class.debit]="op.type === 'DEBIT'">
+                {{ op.type === 'CREDIT' ? 'CREDIT' : 'DEBIT' }}
+              </span>
+              <span class="op-amount" [class.credit]="op.type === 'CREDIT'" [class.debit]="op.type === 'DEBIT'">
+                {{ op.type === 'CREDIT' ? '+' : '-' }}{{ op.amount | number:'1.2-2' }} €
+              </span>
+            </div>
+          </div>
+        }
+      </div>
+    </mat-card>
+  }
+
+</section>
