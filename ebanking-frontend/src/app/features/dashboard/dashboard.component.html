@@ -1,0 +1,119 @@
+<section class="page">
+
+  <!-- Hero Header -->
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Tableau de bord</p>
+      <h1 class="page-title">Vue globale</h1>
+      <p class="page-subtitle">Indicateurs en temps reel — {{ today | date:'EEEE d MMMM yyyy' : '' : 'fr' }}</p>
+    </div>
+  </header>
+
+  @if (loading) {
+    <div class="loading-block">
+      <mat-spinner diameter="42"></mat-spinner>
+    </div>
+  } @else {
+
+    <!-- KPI Cards -->
+    <div class="kpi-grid">
+      <mat-card class="kpi-card kpi-blue">
+        <div class="kpi-icon"><mat-icon>people</mat-icon></div>
+        <div class="kpi-body">
+          <p class="kpi-label">Clients</p>
+          <h2 class="kpi-value">{{ customerCount }}</h2>
+          <p class="kpi-sub">comptes enregistres</p>
+        </div>
+      </mat-card>
+
+      <mat-card class="kpi-card kpi-purple">
+        <div class="kpi-icon"><mat-icon>account_balance_wallet</mat-icon></div>
+        <div class="kpi-body">
+          <p class="kpi-label">Comptes</p>
+          <h2 class="kpi-value">{{ accountCount }}</h2>
+          <p class="kpi-sub">{{ currentAccounts }} courant · {{ savingsAccounts }} epargne</p>
+        </div>
+      </mat-card>
+
+      <mat-card class="kpi-card kpi-green">
+        <div class="kpi-icon"><mat-icon>euro</mat-icon></div>
+        <div class="kpi-body">
+          <p class="kpi-label">Solde total</p>
+          <h2 class="kpi-value">{{ totalBalance | number:'1.0-0' }}<span class="kpi-currency"> €</span></h2>
+          <p class="kpi-sub">actifs sous gestion</p>
+        </div>
+      </mat-card>
+
+      <mat-card class="kpi-card kpi-amber">
+        <div class="kpi-icon"><mat-icon>trending_up</mat-icon></div>
+        <div class="kpi-body">
+          <p class="kpi-label">Activite</p>
+          <h2 class="kpi-value">{{ recentOperations.length }}</h2>
+          <p class="kpi-sub">operations recentes</p>
+        </div>
+      </mat-card>
+    </div>
+
+    <!-- Content Grid -->
+    <div class="content-grid">
+
+      <!-- Top Accounts -->
+      <mat-card class="panel">
+        <div class="panel-header">
+          <h3><mat-icon>stars</mat-icon> Comptes prioritaires</h3>
+          <a mat-button routerLink="/accounts" class="see-all">Voir tout</a>
+        </div>
+        <div class="account-list">
+          @for (account of accounts.slice(0, 5); track account.id) {
+            <div class="account-row" routerLink="/accounts/{{ account.id }}">
+              <div class="account-avatar">
+                {{ account.customerDTO.name[0] }}
+              </div>
+              <div class="account-info">
+                <strong>{{ account.customerDTO.name }}</strong>
+                <code class="account-id">{{ account.id | slice:0:16 }}…</code>
+              </div>
+              <div class="account-balance">
+                <span [class.positive]="account.balance >= 0" [class.negative]="account.balance < 0">
+                  {{ account.balance | number:'1.2-2' }} €
+                </span>
+              </div>
+            </div>
+          }
+          @empty {
+            <p class="empty-state">Aucun compte disponible.</p>
+          }
+        </div>
+      </mat-card>
+
+      <!-- Recent Operations -->
+      <mat-card class="panel">
+        <div class="panel-header">
+          <h3><mat-icon>receipt_long</mat-icon> Activite recente</h3>
+          <a mat-button routerLink="/transactions" class="see-all">Voir tout</a>
+        </div>
+        <div class="op-list">
+          @for (op of recentOperations; track op.id) {
+            <div class="op-row">
+              <div class="op-type-icon" [class.credit]="op.type === 'CREDIT'" [class.debit]="op.type === 'DEBIT'">
+                <mat-icon>{{ op.type === 'CREDIT' ? 'arrow_downward' : 'arrow_upward' }}</mat-icon>
+              </div>
+              <div class="op-info">
+                <strong>{{ op.description || 'Operation bancaire' }}</strong>
+                <span class="op-date">{{ op.operationDate | date:'dd/MM/yyyy' }}</span>
+              </div>
+              <span class="op-amount" [class.credit]="op.type === 'CREDIT'" [class.debit]="op.type === 'DEBIT'">
+                {{ op.type === 'CREDIT' ? '+' : '-' }}{{ op.amount | number:'1.2-2' }} €
+              </span>
+            </div>
+          }
+          @empty {
+            <p class="empty-state">Aucune operation recente.</p>
+          }
+        </div>
+      </mat-card>
+
+    </div>
+  }
+
+</section>
