@@ -1,0 +1,80 @@
+@if (session(); as s) {
+<section class="page">
+
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Compte</p>
+      <h1 class="page-title">Mon profil</h1>
+      <p class="page-subtitle">Informations de votre session</p>
+    </div>
+  </header>
+
+  <div class="profile-layout">
+
+    <!-- Profile Card -->
+    <mat-card class="profile-card">
+      <div class="profile-avatar-wrap">
+        <div class="profile-avatar" [attr.data-role]="s.role">
+          {{ ((s.firstName?.[0] ?? '') + (s.lastName?.[0] ?? '')) || s.username[0] | uppercase }}
+        </div>
+        <div class="avatar-ring"></div>
+      </div>
+
+      <h2 class="profile-name">
+        {{ s.firstName && s.lastName ? s.firstName + ' ' + s.lastName : s.username.split('@')[0] }}
+      </h2>
+      <p class="profile-email">{{ s.username }}</p>
+      <span class="profile-role">{{ s.role }}</span>
+    </mat-card>
+
+    <!-- Details Card -->
+    <mat-card class="details-card">
+      <h3 class="details-title"><mat-icon>info_outline</mat-icon> Informations de session</h3>
+
+      <div class="info-list">
+        <div class="info-row">
+          <mat-icon>person_outline</mat-icon>
+          <div>
+            <p class="info-label">Prenom</p>
+            <p class="info-value">{{ s.firstName || '—' }}</p>
+          </div>
+        </div>
+
+        <div class="info-row">
+          <mat-icon>badge</mat-icon>
+          <div>
+            <p class="info-label">Nom</p>
+            <p class="info-value">{{ s.lastName || '—' }}</p>
+          </div>
+        </div>
+
+        <div class="info-row">
+          <mat-icon>mail_outline</mat-icon>
+          <div>
+            <p class="info-label">Email</p>
+            <p class="info-value">{{ s.username }}</p>
+          </div>
+        </div>
+
+        <div class="info-row">
+          <mat-icon>admin_panel_settings</mat-icon>
+          <div>
+            <p class="info-label">Role</p>
+            <p class="info-value">{{ s.role }}</p>
+          </div>
+        </div>
+
+        <div class="info-row">
+          <mat-icon>schedule</mat-icon>
+          <div>
+            <p class="info-label">Session expire</p>
+            <p class="info-value">{{ s.expiresAt | date:'dd/MM/yyyy HH:mm' }}</p>
+          </div>
+        </div>
+      </div>
+    </mat-card>
+
+  </div>
+
+</section>
+}
