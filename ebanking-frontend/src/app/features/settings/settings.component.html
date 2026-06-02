@@ -1,0 +1,52 @@
+<section class="page">
+
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Preferences</p>
+      <h1 class="page-title">Parametres</h1>
+      <p class="page-subtitle">Personnalisez votre experience</p>
+    </div>
+  </header>
+
+  <mat-card class="settings-card">
+    <h3 class="section-title"><mat-icon>palette</mat-icon> Apparence</h3>
+
+    <div class="setting-row">
+      <div class="setting-info">
+        <mat-icon>{{ theme.mode() === 'dark' ? 'dark_mode' : 'light_mode' }}</mat-icon>
+        <div>
+          <strong>Mode {{ theme.mode() === 'dark' ? 'sombre' : 'clair' }}</strong>
+          <p>{{ theme.mode() === 'dark' ? 'Interface sombre, ideal pour les environnements peu eclaires' : 'Interface claire, ideal pour les environnements bien eclaires' }}</p>
+        </div>
+      </div>
+      <mat-slide-toggle
+        [checked]="theme.mode() === 'dark'"
+        (change)="theme.toggleTheme()"
+        color="primary">
+      </mat-slide-toggle>
+    </div>
+  </mat-card>
+
+  <mat-card class="settings-card">
+    <h3 class="section-title"><mat-icon>info_outline</mat-icon> A propos</h3>
+    <div class="about-grid">
+      <div class="about-item">
+        <span class="about-label">Application</span>
+        <span class="about-value">eBanking Enterprise</span>
+      </div>
+      <div class="about-item">
+        <span class="about-label">Version</span>
+        <span class="about-value">2.0.0</span>
+      </div>
+      <div class="about-item">
+        <span class="about-label">Framework</span>
+        <span class="about-value">Angular 21</span>
+      </div>
+      <div class="about-item">
+        <span class="about-label">Backend</span>
+        <span class="about-value">Spring Boot 4 + JWT</span>
+      </div>
+    </div>
+  </mat-card>
+
+</section>
