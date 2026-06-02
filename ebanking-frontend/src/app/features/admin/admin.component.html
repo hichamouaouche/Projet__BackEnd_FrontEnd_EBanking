@@ -1,0 +1,63 @@
+<section class="page">
+
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Administration</p>
+      <h1 class="page-title">Vue synthese</h1>
+      <p class="page-subtitle">Statistiques, volumes et classement des comptes</p>
+    </div>
+  </header>
+
+  <!-- Stats Row -->
+  <div class="stats-row">
+    <mat-card class="stat-card blue">
+      <div class="stat-icon"><mat-icon>credit_card</mat-icon></div>
+      <div>
+        <p class="stat-label">Comptes courants</p>
+        <h2 class="stat-value">{{ currentCount }}</h2>
+      </div>
+    </mat-card>
+
+    <mat-card class="stat-card green">
+      <div class="stat-icon"><mat-icon>savings</mat-icon></div>
+      <div>
+        <p class="stat-label">Comptes epargne</p>
+        <h2 class="stat-value">{{ savingCount }}</h2>
+      </div>
+    </mat-card>
+
+    <mat-card class="stat-card amber">
+      <div class="stat-icon"><mat-icon>account_balance_wallet</mat-icon></div>
+      <div>
+        <p class="stat-label">Total comptes</p>
+        <h2 class="stat-value">{{ accounts().length }}</h2>
+      </div>
+    </mat-card>
+  </div>
+
+  <!-- Top Accounts -->
+  <mat-card class="top-card">
+    <div class="top-header">
+      <h3><mat-icon>emoji_events</mat-icon> Top 5 — Soldes les plus eleves</h3>
+    </div>
+    <div class="top-list">
+      @for (account of topAccounts(); track account.id; let i = $index) {
+        <div class="top-row">
+          <div class="rank" [class]="'rank-' + (i + 1)">{{ i + 1 }}</div>
+          <div class="top-avatar">{{ account.customerDTO.name[0] }}</div>
+          <div class="top-info">
+            <strong>{{ account.customerDTO.name }}</strong>
+            <code>{{ account.id | slice:0:20 }}…</code>
+          </div>
+          <div class="top-balance">
+            <span>{{ account.balance | number:'1.2-2' }} €</span>
+            <div class="balance-bar">
+              <div class="bar-fill" [style.width.%]="(account.balance / topAccounts()[0].balance) * 100"></div>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </mat-card>
+
+</section>
