@@ -31,14 +31,13 @@ export class DashboardComponent implements OnInit {
   readonly today = new Date();
 
   ngOnInit(): void {
-    this.api
-      .listCustomers()
+    forkJoin({
+      customers: this.api.listCustomers(),
+      accounts: this.api.listAccounts(),
+    })
       .pipe(
-        switchMap((customers) => {
+        switchMap(({ customers, accounts }) => {
           this.customerCount = customers.length;
-          return this.api.listAccounts();
-        }),
-        switchMap((accounts) => {
           this.accounts = accounts;
           this.accountCount = accounts.length;
           this.totalBalance = accounts.reduce((sum, a) => sum + a.balance, 0);

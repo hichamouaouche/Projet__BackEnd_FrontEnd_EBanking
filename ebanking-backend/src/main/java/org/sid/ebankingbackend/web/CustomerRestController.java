@@ -35,10 +35,13 @@ public class CustomerRestController {
          customerDTO.setId(customerId);
          return bankAccountService.updateCustomer(customerDTO);
     }
-    @DeleteMapping("/customers/{id}")
-    public  void deleteCustomer(@PathVariable long id){
-        bankAccountService.deleteCustomer(id);
-
+    @GetMapping("/customers/search")
+    public List<CustomerDTO> searchCustomers(@RequestParam String keyword) {
+        return bankAccountService.searchCustomers(keyword);
     }
 
+    @DeleteMapping("/customers/{id}")
+    public void deleteCustomer(@PathVariable long id) {
+        bankAccountService.deleteCustomer(id);
+    }
 }

@@ -20,6 +20,7 @@
 9. [API REST — Endpoints](#9-api-rest--endpoints)
 10. [Démarrage du projet](#10-démarrage-du-projet)
 11. [Configuration](#11-configuration)
+12. [Améliorations apportées](#12-améliorations-apportées)
 
 ---
 
@@ -65,6 +66,10 @@ L'application est composée de deux parties indépendantes qui communiquent via 
 │   │ AuthCtrl     │  │ CustomerCtrl │  │ BankAccountAPI  │  │
 │   │ /auth/**     │  │ /customers/**│  │ /accounts/**    │  │
 │   └──────────────┘  └──────────────┘  └─────────────────┘  │
+│                          │                                  │
+│   ┌─────────────────────────────────────────────────────┐   │
+│   │    GlobalExceptionHandler (@RestControllerAdvice)   │   │
+│   └─────────────────────────────────────────────────────┘   │
 │                          │                                  │
 │   ┌─────────────────────────────────────────────────────┐   │
 │   │          Service Layer (BankAccountServiceImpl)     │   │
@@ -116,11 +121,15 @@ digital-banking-frontEnd-web/
 │       ├── enums/                     # AccountStatus, OperationType
 │       ├── exceptions/                # Exceptions métier
 │       ├── dtos/                      # Objets de transfert (DTO)
+│       │   ├── DebitRequest.java      # Requête débit
+│       │   ├── CreditRequest.java     # Requête crédit
+│       │   └── TransferRequest.java   # Requête virement
 │       ├── mappers/                   # Conversion entité ↔ DTO
 │       ├── repositories/              # Spring Data JPA
 │       ├── services/                  # Logique métier
 │       ├── security/                  # JWT, SecurityConfig, Filtre
 │       └── web/                       # Contrôleurs REST
+│           └── GlobalExceptionHandler.java  # Gestion centralisée des erreurs
 │
 └── ebanking-frontend/                 # SPA Angular
     └── src/app/
@@ -162,12 +171,32 @@ Customer ─── 1:N ─── BankAccount (abstract)
 `BankAccountServiceImpl` expose les opérations suivantes :
 
 - `saveCustomer` / `updateCustomer` / `deleteCustomer`
-- `listCustomers` / `searchCustomers(keyword)`
+- `listCustomers` / `searchCustomers(keyword)` ← recherche insensible à la casse
 - `saveSavingBankAccount` / `saveCurrentBankAccount`
 - `getAccountHistory(accountId, page, size)` ← pagination
 - `debit(accountId, amount, description)`
 - `credit(accountId, amount, description)`
 - `transfer(accountIdSource, accountIdDest, amount)`
+
+### Gestion des erreurs
+
+Un `@RestControllerAdvice` (`GlobalExceptionHandler`) intercepte toutes les exceptions métier et retourne des réponses HTTP cohérentes :
+
+| Exception | Code HTTP |
+|---|---|
+| `CustomerNotFoundException` | 404 Not Found |
+| `BankAccountNotFoundException` | 404 Not Found |
+| `BalanceNotSufficientException` | 400 Bad Request |
+
+Format de réponse d'erreur :
+```json
+{
+  "timestamp": "2026-06-05T10:00:00Z",
+  "status": 404,
+  "error": "Not Found",
+  "message": "Customer not found"
+}
+```
 
 ---
 
@@ -204,8 +233,8 @@ provider.setPasswordEncoder(new BCryptPasswordEncoder());
 http.sessionManagement(s -> s.sessionCreationPolicy(STATELESS))
     .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
     .authorizeHttpRequests(auth -> auth
-        .requestMatchers("/auth/**").permitAll()
-        .requestMatchers("/customers/**", "/accounts/**").permitAll()
+        .requestMatchers("/auth/**", "/h2-console/**").permitAll()
+        .requestMatchers("/customers/**", "/accounts/**").authenticated()  // protégé
         .anyRequest().authenticated());
 ```
 
@@ -213,7 +242,7 @@ http.sessionManagement(s -> s.sessionCreationPolicy(STATELESS))
 
 ```
 Header  : { "alg": "HS256", "typ": "JWT" }
-Payload : { "sub": "email", "iat": ..., "exp": ...(+24h) }
+Payload : { "sub": "email", "role": "USER", "firstName": "...", "lastName": "...", "iat": ..., "exp": ...(+24h) }
 Signature: HMAC-SHA256(secret ≥ 32 chars)
 ```
 
@@ -236,6 +265,21 @@ displayName = computed(() => this.session()?.firstName ?? 'Utilisateur');
 initials    = computed(() => {
   const s = this.session();
   return s ? (s.firstName[0] + (s.lastName?.[0] ?? '')).toUpperCase() : '?';
+});
+```
+
+### Filtre réactif avec toSignal
+
+Pour connecter un `FormControl` à un `computed()` Angular, on utilise `toSignal` de `@angular/core/rxjs-interop` :
+
+```typescript
+// FormControl → Signal via toSignal
+private readonly searchTerm = toSignal(this.search.valueChanges, { initialValue: '' });
+
+// computed() réagit maintenant aux saisies de l'utilisateur
+readonly filteredAccounts = computed(() => {
+  const term = this.searchTerm().toLowerCase().trim();
+  return !term ? this.accounts() : this.accounts().filter(...);
 });
 ```
 
@@ -270,6 +314,18 @@ setDark(dark: boolean) {
 }
 ```
 
+### Mock login (développement uniquement)
+
+Le fallback mock est désormais conditionnel à l'environnement :
+
+```typescript
+catchError((err) =>
+  environment.production ? throwError(() => err) : this.mockLogin(payload),
+)
+```
+
+En production (`environment.production = true`), toute erreur de login est propagée normalement. En développement, le mock permet de travailler sans backend.
+
 ---
 
 ## 8. Fonctionnalités implémentées
@@ -278,9 +334,9 @@ setDark(dark: boolean) {
 |---|---|
 | **Authentification** | Inscription (Register), Connexion (Login), JWT, Protection des routes (AuthGuard) |
 | **Dashboard** | KPI cards (clients, comptes, solde total, opérations), top 5 comptes, activité récente |
-| **Comptes** | Liste des comptes (courant/épargne), recherche, détail avec historique paginé |
-| **Transactions** | Historique global CREDIT/DEBIT, indicateurs visuels de montant |
-| **Clients (Users)** | Liste, recherche, ajout, modification, suppression de clients |
+| **Comptes** | Liste des comptes (courant/épargne), recherche réactive, détail avec historique paginé |
+| **Transactions** | Débit, Crédit, Virement via API REST — historique CREDIT/DEBIT |
+| **Clients (Users)** | Liste, recherche par nom, ajout, modification, suppression de clients |
 | **Détail client** | Fiche client avec ses comptes bancaires associés |
 | **Admin** | Statistiques système, top 5 comptes par solde |
 | **Profil** | Informations de session, avatar, rôle et date de connexion |
@@ -292,10 +348,10 @@ setDark(dark: boolean) {
 
 ### Authentification
 
-| Méthode | Endpoint | Description |
-|---|---|---|
-| `POST` | `/auth/register` | Créer un compte utilisateur |
-| `POST` | `/auth/login` | Se connecter, retourne un token JWT |
+| Méthode | Endpoint | Auth | Description |
+|---|---|---|---|
+| `POST` | `/auth/register` | Non | Créer un compte utilisateur |
+| `POST` | `/auth/login` | Non | Se connecter, retourne un token JWT |
 
 **Corps de `/auth/login` :**
 ```json
@@ -316,26 +372,36 @@ setDark(dark: boolean) {
 
 ### Clients
 
-| Méthode | Endpoint | Description |
-|---|---|---|
-| `GET` | `/customers` | Liste tous les clients |
-| `GET` | `/customers/{id}` | Détail d'un client |
-| `GET` | `/customers/search?keyword=X` | Recherche par nom |
-| `POST` | `/customers` | Créer un client |
-| `PUT` | `/customers/{id}` | Modifier un client |
-| `DELETE` | `/customers/{id}` | Supprimer un client |
+| Méthode | Endpoint | Auth | Description |
+|---|---|---|---|
+| `GET` | `/customers` | Oui | Liste tous les clients |
+| `GET` | `/customers/{id}` | Oui | Détail d'un client |
+| `GET` | `/customers/search?keyword=X` | Oui | Recherche par nom (insensible à la casse) |
+| `POST` | `/customers` | Oui | Créer un client |
+| `PUT` | `/customers/{id}` | Oui | Modifier un client |
+| `DELETE` | `/customers/{id}` | Oui | Supprimer un client |
 
 ### Comptes bancaires
 
-| Méthode | Endpoint | Description |
-|---|---|---|
-| `GET` | `/accounts` | Liste tous les comptes |
-| `GET` | `/accounts/{accountId}` | Détail d'un compte |
-| `GET` | `/accounts/{accountId}/operations` | Historique paginé |
-| `GET` | `/accounts/{accountId}/pageOperations?page=0&size=5` | Historique paginé |
-| `POST` | `/accounts/debit` | Effectuer un débit |
-| `POST` | `/accounts/credit` | Effectuer un crédit |
-| `POST` | `/accounts/transfer` | Effectuer un virement |
+| Méthode | Endpoint | Auth | Description |
+|---|---|---|---|
+| `GET` | `/accounts` | Oui | Liste tous les comptes |
+| `GET` | `/accounts/{accountId}` | Oui | Détail d'un compte |
+| `GET` | `/accounts/{accountId}/operations` | Oui | Historique complet |
+| `GET` | `/accounts/{accountId}/pageoperations?page=0&size=5` | Oui | Historique paginé |
+| `POST` | `/accounts/debit` | Oui | Effectuer un débit |
+| `POST` | `/accounts/credit` | Oui | Effectuer un crédit |
+| `POST` | `/accounts/transfer` | Oui | Effectuer un virement |
+
+**Corps de `/accounts/debit` :**
+```json
+{ "accountId": "uuid", "amount": 500.0, "description": "Retrait DAB" }
+```
+
+**Corps de `/accounts/transfer` :**
+```json
+{ "accountSource": "uuid1", "accountDestination": "uuid2", "amount": 200.0 }
+```
 
 ---
 
@@ -397,10 +463,40 @@ jwt.expiration=86400000
 
 ```typescript
 export const environment = {
-  production: false,
-  apiUrl: 'http://localhost:8085'
+  production: false,       // true en production — désactive le mock login
+  appName: 'eBanking Enterprise',
+  apiBaseUrl: 'http://localhost:8085',
 };
 ```
+
+---
+
+## 12. Améliorations apportées
+
+Cette section documente les corrections et améliorations appliquées sur la base du code initial.
+
+### Backend
+
+| # | Fichier | Problème | Correction |
+|---|---|---|---|
+| 1 | `SecurityConfig.java` | `/customers/**` et `/accounts/**` étaient `permitAll()` — données bancaires accessibles sans authentification | Changé en `.authenticated()` |
+| 2 | `BankAccountRestAPI.java` | `POST /accounts/debit`, `/credit`, `/transfer` documentés mais absents du contrôleur | Endpoints ajoutés avec DTOs dédiés |
+| 3 | `CustomerRestController.java` | `GET /customers/search` documenté mais absent | Endpoint ajouté |
+| 4 | `CustomerRepository.java` | Pas de méthode de recherche | `findByNameContainsIgnoreCase(String)` ajouté |
+| 5 | `BankAccountService.java` | Interface ne déclarait pas `searchCustomers` | Méthode ajoutée à l'interface et à l'implémentation |
+| 6 | `BankAccountServiceImpl.java` | Pattern `orElse(null)` + null check manuel | Remplacé par `orElseThrow()` |
+| 7 | `BankAccountServiceImpl.java` | Log `updateCustomer` affichait "Saving new Customer" | Corrigé en "Updating Customer" |
+| 8 | `GlobalExceptionHandler.java` | Absence de gestionnaire d'erreurs global — codes HTTP incohérents | `@RestControllerAdvice` créé (404, 400) |
+| 9 | `BankAccountRestAPI.java` | Annotation `@CrossOrigin("*")` redondante avec la config CORS globale | Supprimée |
+
+### Frontend
+
+| # | Fichier | Problème | Correction |
+|---|---|---|---|
+| 1 | `auth.service.ts` | Mock login actif inconditionnellement — tout login fonctionnait si le backend était down | Conditionné à `!environment.production` |
+| 2 | `dashboard.component.ts` | Clients et comptes chargés en série (`switchMap`) — latence inutile | Remplacé par `forkJoin` (requêtes parallèles) |
+| 3 | `accounts.component.ts` | `computed()` basé sur `search.value` (non réactif) — filtre jamais mis à jour | Remplacé par `toSignal(search.valueChanges)` |
+| 4 | `banking-api.service.ts` | Méthodes `debit`, `credit`, `transfer`, `searchCustomers` absentes | Toutes les méthodes ajoutées avec types dédiés |
 
 ---
 
@@ -410,13 +506,16 @@ export const environment = {
 Le constructeur `new DaoAuthenticationProvider()` sans argument a été supprimé. Il faut obligatoirement passer `UserDetailsService` au constructeur : `new DaoAuthenticationProvider(userDetailsService)`.
 
 **CORS :**  
-Configuré côté Spring via `CorsConfigurationSource` (bean) pour autoriser les requêtes `localhost:4200`.
+Configuré côté Spring via `CorsConfigurationSource` (bean) pour autoriser les requêtes `localhost:4200`. L'annotation `@CrossOrigin` sur les contrôleurs est redondante et supprimée.
 
 **Sessions stateless :**  
 Aucun cookie ni session serveur. L'état d'authentification est entièrement porté par le token JWT stocké dans `localStorage`.
 
-**Fallback mock :**  
-Si le backend est inaccessible, `AuthService` bascule automatiquement sur un login mock pour permettre le développement frontend autonome.
+**toSignal + computed() :**  
+Pour rendre un `FormControl` RxJS compatible avec le système de Signals Angular, `toSignal()` de `@angular/core/rxjs-interop` fait le pont entre les deux paradigmes réactifs.
+
+**GlobalExceptionHandler :**  
+Le `@RestControllerAdvice` centralise la gestion des erreurs : les contrôleurs peuvent lancer leurs exceptions métier sans logique de catch, et le handler les convertit en réponses JSON structurées avec le bon code HTTP.
 
 ---
 

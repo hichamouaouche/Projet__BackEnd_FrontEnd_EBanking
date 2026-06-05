@@ -32,7 +32,9 @@ export class AuthService {
           this.setSession(session);
           return session;
         }),
-        catchError(() => this.mockLogin(payload)),
+        catchError((err) =>
+          environment.production ? throwError(() => err) : this.mockLogin(payload),
+        ),
       );
   }
 

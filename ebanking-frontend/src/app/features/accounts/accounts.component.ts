@@ -2,6 +2,7 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -36,8 +37,11 @@ export class AccountsComponent implements OnInit {
   readonly loading = signal(true);
   readonly isCurrentAccount = isCurrentAccount;
 
+  // toSignal rend la valeur du FormControl réactive pour computed()
+  private readonly searchTerm = toSignal(this.search.valueChanges, { initialValue: '' });
+
   readonly filteredAccounts = computed(() => {
-    const term = this.search.value.toLowerCase().trim();
+    const term = this.searchTerm().toLowerCase().trim();
     if (!term) return this.accounts();
     return this.accounts().filter(
       (a) =>
