@@ -418,6 +418,8 @@ En production (`environment.production = true`), toute erreur de login est propa
 ```powershell
 cd ebanking-backend
 .\mvnw.cmd spring-boot:run
+### in linux
+./mvnw spring-boot:run 
 ```
 
 Le backend démarre sur `http://localhost:8085`.  
@@ -427,6 +429,7 @@ Console H2 accessible sur : `http://localhost:8085/h2-console`
 
 ```powershell
 cd ebanking-frontend
+sudo apt install npm
 npm install
 npm start
 ```
